@@ -1,0 +1,225 @@
+#!/bin/bash
+
+######################################################################
+#
+# This script is a direct interface into RANDOM.org's HTTP API (https://www.random.org/clients/http)
+# If used in conjunction with an automated task please refer to the API usage guidelines (https://www.random.org/clients)
+#
+# Author: Simon Barton
+# Copyright 2017
+# License: MIT License
+#
+######################################################################
+
+# Regex for valid integers
+INT_REGEX="^-?[0-9]+$"
+ARG_CHOSEN=0
+
+# Initialize variables to default values
+RAND_TYPE=""
+RAND_NUM=1
+
+INT_MIN=1
+INT_MAX=100
+INT_COL=1
+INT_BASE=10
+
+STR_LEN=10
+STR_DIGITS="off"
+STR_UPPER="off"
+STR_LOWER="off"
+
+# Fonts
+NORM=`tput sgr0`
+BOLD=`tput bold`
+
+# Help function
+function print_help
+{
+    echo -e \\n"---------------------------------------------"
+    echo "-----------------  ${BOLD}RANDORG${NORM}  -----------------"
+    echo -e "---------------------------------------------"\\n
+    echo -e "Usage: ${BOLD}randorg [arg] [options]${NORM}"\\n
+    echo "  ${BOLD}string${NORM}   Generate random string(s)"
+    echo "  ${BOLD}integer${NORM}  Generate random integer(s)"
+    echo "  ${BOLD}quota${NORM}    Displays your remaining bits quota"
+    echo -e \\n"Generating random items"\\n
+    echo "  ${BOLD}--num${NORM}   Number of random items to generate [1 - 10^4]"
+    echo "  ${BOLD}--help${NORM}  Displays this help message"
+    echo -e \\n"Options for random ${BOLD}integers${NORM}:"\\n
+    echo -e "  ${BOLD}randorg integer [options]${NORM}"\\n
+    echo "  ${BOLD}--min${NORM}   The smallest value allowed for each integer [-10^9 - 10^9]"
+    echo "  ${BOLD}--max${NORM}   The largest value allowed for each integer [-10^9 - 10^9]"
+    echo "  ${BOLD}--col${NORM}   The number of columns in which the integers will be arranged [1 - 10^9]"
+    echo "  ${BOLD}--base${NORM}  The base that will be used to print the numbers, i.e. binary, octal, decimal or hexadecimal [2 | 8 | 10 | 16]"
+    echo -e \\n"Options for random ${BOLD}strings${NORM}:"\\n
+    echo -e "  ${BOLD}randorg string [options] [--digits] [--upper] [--lower]${NORM}"\\n
+    echo "  ${BOLD}--len${NORM}     The length of the strings. All the strings produced will have the same length [1 - 20]"
+    echo "  ${BOLD}--digits${NORM}  Determines whether digits (0-9) are allowed to occur in the strings"
+    echo "  ${BOLD}--upper${NORM}   Determines whether uppercase alphabetic characters (A-Z) are allowed to occur in the strings"
+    echo -e "  ${BOLD}--lower${NORM}   Determines lowercase alphabetic characters (a-z) are allowed to occur in the strings"\\n
+    exit 0
+}
+
+function print_quota
+{
+    curl -sSk "https://www.random.org/quota/?format=plain"
+    exit 0
+}
+
+function print_int
+{
+    curl -sSk "https://www.random.org/integers/?num=${RAND_NUM}&min=${INT_MIN}&max=${INT_MAX}&col=${INT_COL}&base=${INT_BASE}&format=plain&rnd=new"
+}
+
+function print_str
+{
+    curl -sSk "https://www.random.org/strings/?num=${RAND_NUM}&len=${STR_LEN}&digits=${STR_DIGITS}&upperalpha=${STR_UPPER}&loweralpha=${STR_LOWER}&unique=on&format=plain&rnd=new"
+}
+
+# Check the number of arguments. If none are passed, print help and exit.
+NUMARGS=$#
+if [ ${NUMARGS} -eq 0 ]; then
+    print_help
+fi
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            print_help
+        ;;
+        quota)
+            print_quota
+        ;;
+        string | integer)
+            ARG_CHOSEN=1
+            RAND_TYPE=$1
+        ;;
+        --num)
+            if [ $2 ]; then
+                if ! [[ $2 =~ ${INT_REGEX} ]] ; then
+                    echo -e "$2 is not an integer"; exit 1
+                fi
+                if (( $2 >= 1 && $2 <= 10000 )); then
+                    RAND_NUM=$2
+                    shift
+                else
+                    echo -e "Number of items, $2, is out of bounds"; exit 1
+                fi
+            else
+                echo -e "$1 requires a non-empty option argument"; exit 1
+            fi
+        ;;
+        --min)
+            if [ $2 ]; then
+                if ! [[ $2 =~ ${INT_REGEX} ]] ; then
+                    echo -e "$2 is not an integer"; exit 1
+                fi
+                if (( $2 >= -1000000000 && $2 <= 1000000000 )); then
+                    INT_MIN=$2
+                    shift
+                else
+                    echo -e "Minimum integer, $2, is out of bounds"; exit 1
+                fi
+            else
+                echo -e "$1 requires a non-empty option argument"; exit 1
+            fi
+        ;;
+        --max)
+            if [ $2 ]; then
+                if ! [[ $2 =~ ${INT_REGEX} ]] ; then
+                    echo -e "$2 is not an integer"; exit 1
+                fi
+                if (( $2 >= -1000000000 && $2 <= 1000000000 )); then
+                    INT_MAX=$2
+                    shift
+                else
+                    echo -e "Maximum integer, $2, is out of bounds"; exit 1
+                fi
+            else
+                echo -e "$1 requires a non-empty option argument"; exit 1
+            fi
+        ;;
+        --col)
+            if [ $2 ]; then
+                if ! [[ $2 =~ ${INT_REGEX} ]] ; then
+                    echo -e "$2 is not an integer"; exit 1
+                fi
+                if (( $2 >= 1 && $2 <= 1000000000 )); then
+                    INT_COL=$2
+                    shift
+                else
+                    echo -e "Column number, $2, is out of bounds"; exit 1
+                fi
+            else
+                echo -e "$1 requires a non-empty option argument"; exit 1
+            fi
+        ;;
+        --base)
+            if [ $2 ]; then
+                if ! [[ $2 =~ ${INT_REGEX} ]] ; then
+                    echo -e "$2 is not an integer"; exit 1
+                fi
+                if (( $2 == 2 || $2 == 8 || $2 == 10 || $2 == 16 )); then
+                    INT_BASE=$2
+                    shift
+                else
+                    echo -e "Unrecognised base $2"; exit 1
+                fi
+            else
+                echo -e "$1 requires a non-empty option argument"; exit 1
+            fi
+        ;;
+        --len)
+            if [ $2 ]; then
+                if ! [[ $2 =~ ${INT_REGEX} ]] ; then
+                    echo -e "$2 is not an integer"; exit 1
+                fi
+                if (( $2 >= 1 && $2 <= 20 )); then
+                    STR_LEN=$2
+                    shift
+                else
+                    echo -e "Length, $2, is out of bounds"; exit 1
+                fi
+            else
+                echo -e "$1 requires a non-empty option argument"; exit 1
+            fi
+        ;;
+        --digits)
+            STR_DIGITS="on"
+        ;;
+        --upper)
+            STR_UPPER="on"
+        ;;
+        --lower)
+            STR_LOWER="on"
+        ;;
+        --) # End of all options
+            shift; break
+        ;;
+        -?*)
+            echo -e "Unrecognised option $1"
+        ;;
+        *) # Default case: No more options, so break out of the loop
+            break
+    esac
+    shift
+done
+
+# Additional validation
+
+if (( ${ARG_CHOSEN} == 0 )); then
+    echo "No operation specified, aborting"; exit 1
+fi
+
+if [[ ${STR_DIGITS} = "off" && ${STR_UPPER} = "off" && ${STR_LOWER} = "off" ]]; then
+    echo "Random strings require at least one of --digits, --upper or --lower to be specified"; exit 1
+fi
+
+if [ ${RAND_TYPE} = "integer" ]; then
+    print_int
+elif [ ${RAND_TYPE} = "string" ]; then
+    print_str
+fi
+
+exit 0
