@@ -6,6 +6,8 @@ Command line tool to generate 'true' random integers and strings via [RANDOM.ORG
 
 This tool is written in bash. Other dependencies are cURL.
 
+Optionally copy `randorg` to `/usr/local/bin` for use anywhere.
+
 ## Basic usage
 
 Generate random strings:
