@@ -13,6 +13,7 @@
 
 # Regex for valid integers
 INT_REGEX="^-?[0-9]+$"
+INT_POS_REGEX="^[0-9]+$"
 ARG_CHOSEN=0
 
 # Initialize variables to default values
@@ -40,9 +41,11 @@ function print_help
     echo "-----------------  ${BOLD}RANDORG${NORM}  -----------------"
     echo -e "---------------------------------------------"\\n
     echo -e "Usage: ${BOLD}randorg [arg] [options]${NORM}"\\n
-    echo "  ${BOLD}string${NORM}   Generate random string(s)"
-    echo "  ${BOLD}integer${NORM}  Generate random integer(s)"
-    echo "  ${BOLD}quota${NORM}    Displays your remaining bits quota"
+    echo "  ${BOLD}string${NORM}        Generate random string(s)"
+    echo "  ${BOLD}integer${NORM}       Generate random integer(s)"
+    echo "  ${BOLD}roll [sides]${NORM}  Roll a dice with [sides] number of sides"
+    echo "  ${BOLD}flip${NORM}          Flip a coin!"
+    echo "  ${BOLD}quota${NORM}         Displays your remaining bits quota"
     echo -e \\n"Generating random items"\\n
     echo "  ${BOLD}--num${NORM}   Number of random items to generate [1 - 10^4]"
     echo "  ${BOLD}--help${NORM}  Displays this help message"
@@ -77,9 +80,34 @@ function print_str
     curl -sSk "https://www.random.org/strings/?num=${RAND_NUM}&len=${STR_LEN}&digits=${STR_DIGITS}&upperalpha=${STR_UPPER}&loweralpha=${STR_LOWER}&unique=on&format=plain&rnd=new"
 }
 
+function roll
+{
+    RAND_TYPE="integer"
+    INT_MIN=1
+    INT_COL=1
+    INT_BASE=10
+
+    print_int
+    exit 0
+}
+
+function flip
+{
+    RAND_TYPE="integer"
+    INT_MIN=0
+    INT_MAX=1
+    INT_COL=1
+    INT_BASE=10
+
+    RESULT=$(print_int)
+
+    if [[ ${RESULT} == "1" ]]; then echo "Heads!"; else echo "Tails!"; fi
+
+    exit 0
+}
+
 # Check the number of arguments. If none are passed, print help and exit.
-NUMARGS=$#
-if [ ${NUMARGS} -eq 0 ]; then
+if [ $# -eq 0 ]; then
     print_help
 fi
 
@@ -94,6 +122,26 @@ while :; do
         string | integer)
             ARG_CHOSEN=1
             RAND_TYPE=$1
+        ;;
+        roll)
+            if [ $2 ]; then
+                if ! [[ $2 =~ ${INT_POS_REGEX} ]] ; then
+                    echo -e "$2 is not an integer"; exit 1
+                fi
+                if (( $2 > 1 )); then
+                    INT_MAX=$2
+                    shift
+                else
+                    echo -e "Dice must have more than 1 side"; exit 1
+                fi
+            else
+                echo -e "$1 requires a non-empty option argument"; exit 1
+            fi
+
+            roll
+        ;;
+        flip)
+            flip
         ;;
         --num)
             if [ $2 ]; then

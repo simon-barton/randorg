@@ -8,6 +8,7 @@ This tool is written in bash. Other dependencies are cURL.
 
 ## Basic usage
 
+Generate random strings:
 ```bash
 $: ./randorg string --num 5 --len 10 --upper --digits
 7LS4SFFUDL
@@ -15,12 +16,22 @@ OMV5V2R7K6
 8G3VAIJ55M
 5MLYZRIR3U
 6LSPCPB78L
-$:
+```
+
+Roll a dice with `n` sides:
+```bash
+$: ./randorg roll 6
+4
+```
+
+Flip a coin:
+```bash
+$: ./randorg flip
+Heads!
 ```
 
 If used in conjunction with an automated task please refer to the RANDOM.ORG's API [usage guidelines](https://www.random.org/clients).
 
 ## Coming soon
 
-- Built in functions like coin flipping and dice rolling
 - Picking from a hat / lottery (from file..)
