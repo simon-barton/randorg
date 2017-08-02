@@ -9,8 +9,8 @@ This tool is written in bash. Other dependencies are cURL.
 ## Basic usage
 
 Generate random strings:
-```bash
-$: ./randorg string --num 5 --len 10 --upper --digits
+```
+$ ./randorg string --num 5 --len 10 --upper --digits
 7LS4SFFUDL
 OMV5V2R7K6
 8G3VAIJ55M
@@ -19,14 +19,14 @@ OMV5V2R7K6
 ```
 
 Roll a dice with `n` sides:
-```bash
-$: ./randorg roll 6
+```
+$ ./randorg roll 6
 4
 ```
 
 Flip a coin:
-```bash
-$: ./randorg flip
+```
+$ ./randorg flip
 Heads!
 ```
 
