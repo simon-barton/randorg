@@ -1,5 +1,7 @@
 # randorg
 
+![I'm So Random](https://imgs.xkcd.com/comics/im_so_random.png "I'm So Random")
+
 Command line tool to generate '[true](https://www.random.org/randomness/)' random integers and strings via [RANDOM.ORG](https://www.random.org/)
 
 ## Installation
