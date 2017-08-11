@@ -267,13 +267,12 @@ if (( ${ARG_CHOSEN} == 0 )); then
     echo "No operation specified, aborting"; exit 1
 fi
 
-if [[ ${STR_DIGITS} = "off" && ${STR_UPPER} = "off" && ${STR_LOWER} = "off" ]]; then
-    echo "Random strings require at least one of --digits, --upper or --lower to be specified"; exit 1
-fi
-
 if [ ${RAND_TYPE} = "integer" ]; then
     print_int
 elif [ ${RAND_TYPE} = "string" ]; then
+    if [[ ${STR_DIGITS} = "off" && ${STR_UPPER} = "off" && ${STR_LOWER} = "off" ]]; then
+        echo "Random strings require at least one of --digits, --upper or --lower to be specified"; exit 1
+    fi
     print_str
 fi
 
